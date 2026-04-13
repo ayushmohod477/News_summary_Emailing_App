@@ -1,19 +1,30 @@
-from langchain.chat_models import init_chat_model
+import requests
+from send_email import send_email
+from Ai_model import summarize
 from dotenv import load_dotenv
 import os
 
 
 load_dotenv()
 
-Google_Api_Key = os.getenv("Google_Api_Key")
+NEWS_API_KEY = os.getenv('NEWS_API_KEY')
 
-model = init_chat_model(model="gemini-3-flash-preview",
-                        model_provider="google-genai",
-                        api_key=Google_Api_Key
-                        )
+topic = "tesla"
+url = (f"https://newsapi.org/v2/everything?q={topic}&sortBy="
+       "publishedAt&"
+       f"apiKey={NEWS_API_KEY}")
 
+request = requests.get(url)
+content = request.json()
 
-def summarize(prompt):
-    response = model.invoke(f"summarize these news in one para to mail the summary :{prompt}")
-    summary = response.content[0]['text']
-    return summary
+body = ""
+for article in content["articles"][0:20]:
+    title = article["title"] or ""
+    description = article["description"] or ""
+    link = article["url"] or ""
+
+    body += f"{title}\n{description}\n{link}\n\n"
+
+body = summarize(body)
+body = body.encode("utf-8")
+send_email(body)

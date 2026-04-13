@@ -1,12 +1,18 @@
 import requests
 from send_email import send_email
 from main import summarize
+from dotenv import load_dotenv
+import os
 
+
+load_dotenv()
+
+NEWS_API_KEY = os.getenv('NEWS_API_KEY')
 
 topic = "tesla"
 url = (f"https://newsapi.org/v2/everything?q={topic}&sortBy="
        "publishedAt&"
-       "apiKey=890603a55bfa47048e4490069ebee18c&language=en")
+       f"apiKey={NEWS_API_KEY}")
 
 request = requests.get(url)
 content = request.json()
